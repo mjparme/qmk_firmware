@@ -21,6 +21,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define MANUFACTURER mjparme
 
+//Uses the Elite-C instead of ProMicro so has a few unused pins
+#define UNUSED_PIN {D5, C7, F1, F0, B0}
+
 //B7 is not available on a ProcMicro but is one of the extra pins on an Elite-C
  #define BACKLIGHT_PIN B7
  #define BACKLIGHT_LEVELS 3

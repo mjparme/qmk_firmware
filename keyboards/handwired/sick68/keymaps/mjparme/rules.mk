@@ -9,7 +9,7 @@ MCU = atmega32u4
 #   QMK DFU      qmk-dfu
 #   ATmega32A    bootloadHID
 #   ATmega328P   USBasp
-BOOTLOADER = qmk-dfu
+BOOTLOADER = atmel-dfu
 
 BACKLIGHT_ENABLE = yes
 LAYOUTS = 65_ansi
