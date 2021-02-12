@@ -47,10 +47,6 @@ int tp_buttons;
 int retro_tapping_counter = 0;
 #endif
 
-#ifdef FAUXCLICKY_ENABLE
-#    include "fauxclicky.h"
-#endif
-
 #ifdef IGNORE_MOD_TAP_INTERRUPT_PER_KEY
 __attribute__((weak)) bool get_ignore_mod_tap_interrupt(uint16_t keycode, keyrecord_t *record) { return false; }
 #endif
@@ -79,16 +75,6 @@ void action_exec(keyevent_t event) {
         retro_tapping_counter++;
 #endif
     }
-
-#ifdef FAUXCLICKY_ENABLE
-    if (IS_PRESSED(event)) {
-        FAUXCLICKY_ACTION_PRESS;
-    }
-    if (IS_RELEASED(event)) {
-        FAUXCLICKY_ACTION_RELEASE;
-    }
-    fauxclicky_check();
-#endif
 
 #ifdef SWAP_HANDS_ENABLE
     if (!IS_NOEVENT(event)) {
@@ -443,6 +429,15 @@ void process_action(keyrecord_t *record, action_t action) {
                     case KC_MS_BTN5:
                         register_button(true, MOUSE_BTN5);
                         break;
+                    case KC_MS_BTN6:
+                        register_button(true, MOUSE_BTN6);
+                        break;
+                    case KC_MS_BTN7:
+                        register_button(true, MOUSE_BTN7);
+                        break;
+                    case KC_MS_BTN8:
+                        register_button(true, MOUSE_BTN8);
+                        break;
 #    endif
                     default:
                         mousekey_send();
@@ -468,6 +463,15 @@ void process_action(keyrecord_t *record, action_t action) {
                         break;
                     case KC_MS_BTN5:
                         register_button(false, MOUSE_BTN5);
+                        break;
+                    case KC_MS_BTN6:
+                        register_button(false, MOUSE_BTN6);
+                        break;
+                    case KC_MS_BTN7:
+                        register_button(false, MOUSE_BTN7);
+                        break;
+                    case KC_MS_BTN8:
+                        register_button(false, MOUSE_BTN8);
                         break;
 #    endif
                     default:
@@ -1017,16 +1021,16 @@ void clear_keyboard_but_mods(void) {
  * FIXME: Needs documentation.
  */
 void clear_keyboard_but_mods_and_keys() {
+#ifdef EXTRAKEY_ENABLE
+    host_system_send(0);
+    host_consumer_send(0);
+#endif
     clear_weak_mods();
     clear_macro_mods();
     send_keyboard_report();
 #ifdef MOUSEKEY_ENABLE
     mousekey_clear();
     mousekey_send();
-#endif
-#ifdef EXTRAKEY_ENABLE
-    host_system_send(0);
-    host_consumer_send(0);
 #endif
 }
 

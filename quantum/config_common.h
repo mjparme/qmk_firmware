@@ -39,7 +39,7 @@
 #        define PIND_ADDRESS 0x9
 #        define PINE_ADDRESS 0xC
 #        define PINF_ADDRESS 0xF
-#    elif defined(__AVR_ATmega32U2__) || defined(__AVR_ATmega16U2__) || defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__)
+#    elif defined(__AVR_AT90USB162__) || defined(__AVR_ATmega16U2__) || defined(__AVR_ATmega32U2__) || defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__)
 #        define ADDRESS_BASE 0x00
 #        define PINB_ADDRESS 0x3
 #        define PINC_ADDRESS 0x6
@@ -364,51 +364,6 @@
 #            define K14 PAL_LINE(GPIOK, 14)
 #            define K15 PAL_LINE(GPIOK, 15)
 #        endif
-#    endif
-#endif
-
-/* USART configuration */
-#ifdef BLUETOOTH_ENABLE
-#    ifdef __AVR_ATmega32U4__
-#        define SERIAL_UART_BAUD 9600
-#        define SERIAL_UART_DATA UDR1
-#        define SERIAL_UART_UBRR (F_CPU / (16UL * SERIAL_UART_BAUD) - 1)
-#        define SERIAL_UART_RXD_VECT USART1_RX_vect
-#        define SERIAL_UART_TXD_READY (UCSR1A & _BV(UDRE1))
-#        define SERIAL_UART_INIT()                  \
-            do {                                    \
-                /* baud rate */                     \
-                UBRR1L = SERIAL_UART_UBRR;          \
-                /* baud rate */                     \
-                UBRR1H = SERIAL_UART_UBRR >> 8;     \
-                /* enable TX */                     \
-                UCSR1B = _BV(TXEN1);                \
-                /* 8-bit data */                    \
-                UCSR1C = _BV(UCSZ11) | _BV(UCSZ10); \
-                sei();                              \
-            } while (0)
-#    elif defined(__AVR_AT90USB646__) || defined(__AVR_AT90USB647__) || defined(__AVR_AT90USB1286__) || defined(__AVR_AT90USB1287__)
-#        define SERIAL_UART_BAUD 115200
-#        define SERIAL_UART_DATA UDR1
-/* UBRR should result in ~16 and set UCSR1A = _BV(U2X1) as per rn42 documentation. HC05 needs baudrate configured accordingly */
-#        define SERIAL_UART_UBRR (F_CPU / (8UL * SERIAL_UART_BAUD) - 1)
-#        define SERIAL_UART_RXD_VECT USART1_RX_vect
-#        define SERIAL_UART_TXD_READY (UCSR1A & _BV(UDRE1))
-#        define SERIAL_UART_INIT()                  \
-            do {                                    \
-                UCSR1A = _BV(U2X1);                 \
-                /* baud rate */                     \
-                UBRR1L = SERIAL_UART_UBRR;          \
-                /* baud rate */                     \
-                UBRR1H = SERIAL_UART_UBRR >> 8;     \
-                /* enable TX */                     \
-                UCSR1B = _BV(TXEN1);                \
-                /* 8-bit data */                    \
-                UCSR1C = _BV(UCSZ11) | _BV(UCSZ10); \
-                sei();                              \
-            } while (0)
-#    else
-#        error "USART configuration is needed."
 #    endif
 #endif
 
