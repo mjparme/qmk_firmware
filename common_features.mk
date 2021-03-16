@@ -17,6 +17,7 @@ SERIAL_PATH := $(QUANTUM_PATH)/serial_link
 
 QUANTUM_SRC += \
     $(QUANTUM_DIR)/quantum.c \
+    $(QUANTUM_DIR)/send_string.c \
     $(QUANTUM_DIR)/bitwise.c \
     $(QUANTUM_DIR)/led.c \
     $(QUANTUM_DIR)/keymap_common.c \
@@ -42,12 +43,31 @@ ifeq ($(strip $(COMMAND_ENABLE)), yes)
     OPT_DEFS += -DCOMMAND_ENABLE
 endif
 
+AUDIO_ENABLE ?= no
 ifeq ($(strip $(AUDIO_ENABLE)), yes)
+    ifeq ($(PLATFORM),CHIBIOS)
+        AUDIO_DRIVER ?= dac_basic
+        ifeq ($(strip $(AUDIO_DRIVER)), dac_basic)
+            OPT_DEFS += -DAUDIO_DRIVER_DAC
+        else ifeq ($(strip $(AUDIO_DRIVER)), dac_additive)
+            OPT_DEFS += -DAUDIO_DRIVER_DAC
+        ## stm32f2 and above have a usable DAC unit, f1 do not, and need to use pwm instead
+        else ifeq ($(strip $(AUDIO_DRIVER)), pwm_software)
+            OPT_DEFS += -DAUDIO_DRIVER_PWM
+        else ifeq ($(strip $(AUDIO_DRIVER)), pwm_hardware)
+            OPT_DEFS += -DAUDIO_DRIVER_PWM
+        endif
+    else
+        # fallback for all other platforms is pwm
+        AUDIO_DRIVER ?= pwm_hardware
+        OPT_DEFS += -DAUDIO_DRIVER_PWM
+    endif
     OPT_DEFS += -DAUDIO_ENABLE
     MUSIC_ENABLE = yes
     SRC += $(QUANTUM_DIR)/process_keycode/process_audio.c
     SRC += $(QUANTUM_DIR)/process_keycode/process_clicky.c
-    SRC += $(QUANTUM_DIR)/audio/audio_$(PLATFORM_KEY).c
+    SRC += $(QUANTUM_DIR)/audio/audio.c ## common audio code, hardware agnostic
+    SRC += $(QUANTUM_DIR)/audio/driver_$(PLATFORM_KEY)_$(strip $(AUDIO_DRIVER)).c
     SRC += $(QUANTUM_DIR)/audio/voices.c
     SRC += $(QUANTUM_DIR)/audio/luts.c
 endif
@@ -197,18 +217,16 @@ ifeq ($(strip $(RGBLIGHT_ENABLE)), yes)
     endif
 endif
 
-
 LED_MATRIX_ENABLE ?= no
 VALID_LED_MATRIX_TYPES := IS31FL3731 custom
 # TODO: IS31FL3733 IS31FL3737 IS31FL3741
 
 ifeq ($(strip $(LED_MATRIX_ENABLE)), yes)
     ifeq ($(filter $(LED_MATRIX_DRIVER),$(VALID_LED_MATRIX_TYPES)),)
-        $(error LED_MATRIX_DRIVER="$(LED_MATRIX_DRIVER)" is not a valid matrix type)
+        $(error "$(LED_MATRIX_DRIVER)" is not a valid matrix type)
     else
-        BACKLIGHT_ENABLE = yes
-        BACKLIGHT_DRIVER = custom
         OPT_DEFS += -DLED_MATRIX_ENABLE
+        SRC += $(QUANTUM_DIR)/process_keycode/process_backlight.c
         SRC += $(QUANTUM_DIR)/led_matrix.c
         SRC += $(QUANTUM_DIR)/led_matrix_drivers.c
     endif
@@ -403,10 +421,6 @@ ifeq ($(strip $(TERMINAL_ENABLE)), yes)
     OPT_DEFS += -DUSER_PRINT
 endif
 
-ifeq ($(strip $(USB_HID_ENABLE)), yes)
-    include $(TMK_DIR)/protocol/usb_hid.mk
-endif
-
 ifeq ($(strip $(WPM_ENABLE)), yes)
     SRC += $(QUANTUM_DIR)/wpm.c
     OPT_DEFS += -DWPM_ENABLE
@@ -439,6 +453,23 @@ ifeq ($(strip $(DIP_SWITCH_ENABLE)), yes)
     OPT_DEFS += -DDIP_SWITCH_ENABLE
     SRC += $(QUANTUM_DIR)/dip_switch.c
 endif
+
+VALID_MAGIC_TYPES := yes full lite
+BOOTMAGIC_ENABLE ?= no
+ifneq ($(strip $(BOOTMAGIC_ENABLE)), no)
+  ifeq ($(filter $(BOOTMAGIC_ENABLE),$(VALID_MAGIC_TYPES)),)
+    $(error BOOTMAGIC_ENABLE="$(BOOTMAGIC_ENABLE)" is not a valid type of magic)
+  endif
+  ifeq ($(strip $(BOOTMAGIC_ENABLE)), lite)
+      OPT_DEFS += -DBOOTMAGIC_LITE
+      QUANTUM_SRC += $(QUANTUM_DIR)/bootmagic/bootmagic_lite.c
+  else
+    OPT_DEFS += -DBOOTMAGIC_ENABLE
+    QUANTUM_SRC += $(QUANTUM_DIR)/bootmagic/bootmagic_full.c
+  endif
+endif
+COMMON_VPATH += $(QUANTUM_DIR)/bootmagic
+QUANTUM_SRC += $(QUANTUM_DIR)/bootmagic/magic.c
 
 VALID_CUSTOM_MATRIX_TYPES:= yes lite no
 
@@ -630,4 +661,28 @@ endif
 
 ifeq ($(strip $(JOYSTICK_ENABLE)), digital)
     OPT_DEFS += -DDIGITAL_JOYSTICK_ENABLE
+endif
+
+USBPD_ENABLE ?= no
+VALID_USBPD_DRIVER_TYPES = custom vendor
+USBPD_DRIVER ?= vendor
+ifeq ($(strip $(USBPD_ENABLE)), yes)
+    ifeq ($(filter $(strip $(USBPD_DRIVER)),$(VALID_USBPD_DRIVER_TYPES)),)
+        $(error USBPD_DRIVER="$(USBPD_DRIVER)" is not a valid USBPD driver)
+    else
+        OPT_DEFS += -DUSBPD_ENABLE
+        ifeq ($(strip $(USBPD_DRIVER)), vendor)
+            # Vendor-specific implementations
+            OPT_DEFS += -DUSBPD_VENDOR
+            ifeq ($(strip $(MCU_SERIES)), STM32G4xx)
+                OPT_DEFS += -DUSBPD_STM32G4
+                SRC += usbpd_stm32g4.c
+            else
+                $(error There is no vendor-provided USBPD driver available)
+            endif
+        else ifeq ($(strip $(USBPD_DRIVER)), custom)
+            OPT_DEFS += -DUSBPD_CUSTOM
+            # Board designers can add their own driver to $(SRC)
+        endif
+    endif
 endif

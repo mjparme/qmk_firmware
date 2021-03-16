@@ -77,7 +77,7 @@ def get_git_version(repo_dir='.', check_dir='.'):
             return git_describe.stdout.strip()
 
         else:
-            cli.args.warn(f'"{" ".join(git_describe_cmd)}" returned error code {git_describe.returncode}')
+            cli.log.warn(f'"{" ".join(git_describe_cmd)}" returned error code {git_describe.returncode}')
             print(git_describe.stderr)
             return strftime(time_fmt)
 
@@ -180,6 +180,7 @@ def compile_configurator_json(user_keymap, bootloader=None, parallel=1, **env_va
         f'VERBOSE={verbose}',
         f'COLOR={color}',
         'SILENT=false',
+        'QMK_BIN=qmk',
     ])
 
     return make_command

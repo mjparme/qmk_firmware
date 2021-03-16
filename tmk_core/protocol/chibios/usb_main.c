@@ -874,7 +874,7 @@ void send_mouse(report_mouse_t *report) {
 }
 
 #else  /* MOUSE_ENABLE */
-void   send_mouse(report_mouse_t *report) { (void)report; }
+void send_mouse(report_mouse_t *report) { (void)report; }
 #endif /* MOUSE_ENABLE */
 
 /* ---------------------------------------------------------
@@ -953,14 +953,7 @@ void console_task(void) {
     } while (size > 0);
 }
 
-#else  /* CONSOLE_ENABLE */
-int8_t sendchar(uint8_t c) {
-    (void)c;
-    return 0;
-}
 #endif /* CONSOLE_ENABLE */
-
-void _putchar(char character) { sendchar(character); }
 
 #ifdef RAW_ENABLE
 void raw_hid_send(uint8_t *data, uint8_t length) {

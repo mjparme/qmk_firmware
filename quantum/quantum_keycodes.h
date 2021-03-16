@@ -73,31 +73,22 @@ enum quantum_keycodes {
     QK_LAYER_TAP_TOGGLE_MAX = 0x58FF,
     QK_LAYER_MOD            = 0x5900,
     QK_LAYER_MOD_MAX        = 0x59FF,
-#ifdef STENO_ENABLE
-    QK_STENO        = 0x5A00,
-    QK_STENO_BOLT   = 0x5A30,
-    QK_STENO_GEMINI = 0x5A31,
-    QK_STENO_MAX    = 0x5A3F,
-#endif
-#ifdef SWAP_HANDS_ENABLE
-    QK_SWAP_HANDS     = 0x5B00,
-    QK_SWAP_HANDS_MAX = 0x5BFF,
-#endif
-    QK_MOD_TAP     = 0x6000,
-    QK_MOD_TAP_MAX = 0x7FFF,
-#ifdef UNICODE_ENABLE
-    QK_UNICODE     = 0x8000,
-    QK_UNICODE_MAX = 0xFFFF,
-#endif
-#ifdef UNICODEMAP_ENABLE
-    QK_UNICODEMAP          = 0x8000,
-    QK_UNICODEMAP_MAX      = 0xBFFF,
-    QK_UNICODEMAP_PAIR     = 0xC000,
-    QK_UNICODEMAP_PAIR_MAX = 0xFFFF,
-#endif
+    QK_STENO                = 0x5A00,
+    QK_STENO_BOLT           = 0x5A30,
+    QK_STENO_GEMINI         = 0x5A31,
+    QK_STENO_MAX            = 0x5A3F,
+    QK_SWAP_HANDS           = 0x5B00,
+    QK_SWAP_HANDS_MAX       = 0x5BFF,
+    QK_MOD_TAP              = 0x6000,
+    QK_MOD_TAP_MAX          = 0x7FFF,
+    QK_UNICODE              = 0x8000,
+    QK_UNICODE_MAX          = 0xFFFF,
+    QK_UNICODEMAP           = 0x8000,
+    QK_UNICODEMAP_MAX       = 0xBFFF,
+    QK_UNICODEMAP_PAIR      = 0xC000,
+    QK_UNICODEMAP_PAIR_MAX  = 0xFFFF,
 
     // Loose keycodes - to be used directly
-
     RESET = 0x5C00,
     DEBUG,
     MAGIC_SWAP_CONTROL_CAPSLOCK,
@@ -341,7 +332,11 @@ enum quantum_keycodes {
 
     MIDI_VELOCITY_MIN,
     MI_VEL_0 = MIDI_VELOCITY_MIN,
+#    ifdef VIA_ENABLE
+    MI_VEL_1 = MIDI_VELOCITY_MIN,
+#    else
     MI_VEL_1,
+#    endif
     MI_VEL_2,
     MI_VEL_3,
     MI_VEL_4,
@@ -578,6 +573,10 @@ enum quantum_keycodes {
 
 #endif
 
+    ONESHOT_ENABLE,
+    ONESHOT_DISABLE,
+    ONESHOT_TOGGLE,
+
     // always leave at the end
     SAFE_RANGE
 };
@@ -685,16 +684,13 @@ enum quantum_keycodes {
 
 #define KC_DELT KC_DELETE  // Del key (four letter code)
 
-// Alias for function layers than expand past FN31
-#define FUNC(kc) (QK_FUNCTION | (kc))
-
 // Aliases
 #define C(kc) LCTL(kc)
 #define S(kc) LSFT(kc)
 #define A(kc) LALT(kc)
 #define G(kc) LGUI(kc)
 
-#define F(kc) FUNC(kc)
+#define F(kc) (QK_FUNCTION | (kc))
 #define M(kc) (QK_MACRO | (kc))
 
 #define MACROTAP(kc) (QK_MACRO | (FUNC_TAP << 8) | (kc))
@@ -847,15 +843,11 @@ enum quantum_keycodes {
 #define KC_HYPR HYPR(KC_NO)
 #define KC_MEH MEH(KC_NO)
 
-#ifdef UNICODE_ENABLE
-// Allows Unicode input up to 0x7FFF
-#    define UC(c) (QK_UNICODE | (c))
-#endif
-#ifdef UNICODEMAP_ENABLE
-// Allows Unicode input up to 0x10FFFF, requires unicode_map
-#    define X(i) (QK_UNICODEMAP | (i))
-#    define XP(i, j) (QK_UNICODEMAP_PAIR | ((i)&0x7F) | (((j)&0x7F) << 7))  // 127 max i and j
-#endif
+// UNICODE_ENABLE - Allows Unicode input up to 0x7FFF
+#define UC(c) (QK_UNICODE | (c))
+// UNICODEMAP_ENABLE - Allows Unicode input up to 0x10FFFF, requires unicode_map
+#define X(i) (QK_UNICODEMAP | (i))
+#define XP(i, j) (QK_UNICODEMAP_PAIR | ((i)&0x7F) | (((j)&0x7F) << 7))  // 127 max i and j
 
 #define UC_MOD UNICODE_MODE_FORWARD
 #define UC_RMOD UNICODE_MODE_REVERSE
@@ -868,16 +860,14 @@ enum quantum_keycodes {
 #define UC_M_BS UNICODE_MODE_BSD
 #define UC_M_WC UNICODE_MODE_WINC
 
-#ifdef SWAP_HANDS_ENABLE
-#    define SH_T(kc) (QK_SWAP_HANDS | (kc))
-#    define SH_TG (QK_SWAP_HANDS | OP_SH_TOGGLE)
-#    define SH_TT (QK_SWAP_HANDS | OP_SH_TAP_TOGGLE)
-#    define SH_OS (QK_SWAP_HANDS | OP_SH_ONESHOT)
-#    define SH_MON (QK_SWAP_HANDS | OP_SH_ON_OFF)
-#    define SH_MOFF (QK_SWAP_HANDS | OP_SH_OFF_ON)
-#    define SH_ON (QK_SWAP_HANDS | OP_SH_ON)
-#    define SH_OFF (QK_SWAP_HANDS | OP_SH_OFF)
-#endif
+#define SH_T(kc) (QK_SWAP_HANDS | (kc))
+#define SH_TG (QK_SWAP_HANDS | OP_SH_TOGGLE)
+#define SH_TT (QK_SWAP_HANDS | OP_SH_TAP_TOGGLE)
+#define SH_OS (QK_SWAP_HANDS | OP_SH_ONESHOT)
+#define SH_MON (QK_SWAP_HANDS | OP_SH_ON_OFF)
+#define SH_MOFF (QK_SWAP_HANDS | OP_SH_OFF_ON)
+#define SH_ON (QK_SWAP_HANDS | OP_SH_ON)
+#define SH_OFF (QK_SWAP_HANDS | OP_SH_OFF)
 
 // Dynamic Macros aliases
 #define DM_REC1 DYN_REC_START1
@@ -885,3 +875,8 @@ enum quantum_keycodes {
 #define DM_RSTP DYN_REC_STOP
 #define DM_PLY1 DYN_MACRO_PLAY1
 #define DM_PLY2 DYN_MACRO_PLAY2
+
+// One Shot toggle
+#define OS_TOGG ONESHOT_TOGGLE
+#define OS_ON ONESHOT_ENABLE
+#define OS_OFF ONESHOT_DISABLE

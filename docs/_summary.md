@@ -119,12 +119,8 @@
   * Breaking Changes
     * [Overview](breaking_changes.md)
     * [My Pull Request Was Flagged](breaking_changes_instructions.md)
-    * History
-      * [2020 Nov 28](ChangeLog/20201128.md)
-      * [2020 Aug 29](ChangeLog/20200829.md)
-      * [2020 May 30](ChangeLog/20200530.md)
-      * [2020 Feb 29](ChangeLog/20200229.md)
-      * [2019 Aug 30](ChangeLog/20190830.md)
+    * [Most Recent ChangeLog](ChangeLog/20210227.md "QMK v0.12.0 - 2021 Feb 27")
+    * [Past Breaking Changes](breaking_changes_history.md)
 
   * C Development
     * [ARM Debugging Guide](arm_debugging.md)
@@ -133,6 +129,7 @@
     * [Compatible Microcontrollers](compatible_microcontrollers.md)
     * [Drivers](hardware_drivers.md)
       * [ADC Driver](adc_driver.md)
+      * [Audio Driver](audio_driver.md)
       * [I2C Driver](i2c_driver.md)
       * [SPI Driver](spi_driver.md)
       * [WS2812 Driver](ws2812_driver.md)
