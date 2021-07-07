@@ -6,8 +6,7 @@
 #include "action.h"
 
 enum ssd1306_cmds {
-  DisplayOff = 0xAE,
-  DisplayOn = 0xAF,
+  DisplayOff = 0xAE, DisplayOn = 0xAF,
 
   SetContrast = 0x81,
   DisplayAllOnResume = 0xA4,
